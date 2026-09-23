@@ -8,14 +8,18 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
 import { NoteDto, RejectDto } from '../common/action.dto';
 import { Permission } from '../common/enums';
 import { RequestContext } from '../common/interfaces';
 import { Paginated, PaginationQuery } from '../common/pagination';
 import { AdminJwtGuard, ClientIp, CurrentAdmin, PermissionsGuard, RequirePermissions, SuperAdminOnly } from '../auth/security';
+import { QrStorageService, UploadedQrFile } from './qr-storage.service';
 
 class PaymentQuery extends PaginationQuery {
   status?: string;
@@ -61,7 +65,10 @@ export class UnimplementedPaymentsAdminService extends PaymentsAdminService {
 @UseGuards(AdminJwtGuard, PermissionsGuard)
 @Controller('admin')
 export class PaymentsController {
-  constructor(private readonly svc: PaymentsAdminService) {}
+  constructor(
+    private readonly svc: PaymentsAdminService,
+    private readonly qrStorage: QrStorageService,
+  ) {}
 
   @Get('payments')
   @RequirePermissions(Permission.VERIFY_PAYMENTS)
@@ -102,5 +109,17 @@ export class PaymentsController {
   @RequirePermissions(Permission.MANAGE_PAYMENT_SETTINGS)
   update(@Body() dto: PaymentSettingsDto, @CurrentAdmin() u: { adminId: string }, @ClientIp() ip: string) {
     return this.svc.updateSettings(dto, { adminId: u.adminId, ip });
+  }
+
+  /**
+   * Multipart QR image upload (field name: "file", max 2 MB).
+   * Returns { url } which the panel then submits as qrImageUrl via PUT /payment-settings.
+   */
+  @Post('payment-settings/qr-upload')
+  @SuperAdminOnly()
+  @RequirePermissions(Permission.MANAGE_PAYMENT_SETTINGS)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 2 * 1024 * 1024 } }))
+  uploadQr(@UploadedFile() file: UploadedQrFile) {
+    return this.qrStorage.saveQrImage(file);
   }
 }

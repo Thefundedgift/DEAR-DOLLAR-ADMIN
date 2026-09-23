@@ -58,7 +58,15 @@ export class AppModule {}
 ADMIN_JWT_SECRET=change-me-long-random-string
 ADMIN_JWT_EXPIRES_IN=15m
 ADMIN_REFRESH_TTL_DAYS=7
+
+# QR image upload (local-disk storage, works out of the box)
+UPLOAD_DIR=./uploads
+PUBLIC_ASSETS_URL=https://api.yourdomain.com/uploads
 ```
+
+> Serve the uploads directory statically, e.g. with Nginx:
+> `location /uploads/ { alias /opt/deardollar/backend/uploads/; }`
+> or in Nest via `ServeStaticModule.forRoot({ rootPath: 'uploads', serveRoot: '/uploads' })`.
 
 > Access tokens are short-lived JWTs. Refresh tokens are **opaque random
 > strings stored hashed (sha256)** — never JWTs, never stored in plaintext.

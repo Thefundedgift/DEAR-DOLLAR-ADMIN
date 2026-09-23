@@ -30,4 +30,14 @@ export const paymentSettingsService = {
     const { data } = await api.put<PaymentSettings>('/admin/payment-settings', input);
     return data;
   },
+  // Uploads the QR image to the backend (multipart); backend stores it and returns a public URL
+  async uploadQrImage(file: File): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post<{ url: string }>('/admin/payment-settings/qr-upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    });
+    return data;
+  },
 };

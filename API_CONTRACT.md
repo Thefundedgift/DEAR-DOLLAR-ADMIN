@@ -173,9 +173,16 @@ Only backend verification credits the Money Wallet.
 | GET | `/admin/payment-settings` (current config) |
 | GET | `/admin/payment-settings/history` (all previous versions, newest first) |
 | PUT | `/admin/payment-settings` (creates a NEW version; old records preserved) |
+| POST | `/admin/payment-settings/qr-upload` (multipart upload of the QR image) |
 
 Body: `{ "upiId": "merchant@upi", "merchantName": "DEAR DOLLAR", "qrImageUrl": "https://...", "instructions": "...", "enabled": true }`
 Changing settings must NOT modify old payment records and must be audit-logged.
+
+`POST /admin/payment-settings/qr-upload`: `multipart/form-data` with a single
+`file` field (PNG/JPG/WebP, max 2 MB). The backend stores the image (local disk
+served by Nginx, or S3-compatible storage) and responds
+`{ "url": "https://api.yourdomain.com/uploads/qr/<name>.png" }`. The returned URL
+is then submitted as `qrImageUrl` via `PUT /admin/payment-settings`.
 
 ---
 

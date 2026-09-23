@@ -30,6 +30,7 @@ import {
   UnimplementedSellRequestsAdminService,
 } from './requests/requests.controller';
 import { PaymentsAdminService, PaymentsController, UnimplementedPaymentsAdminService } from './payments/payments.controller';
+import { LocalDiskQrStorageService, QrStorageService } from './payments/qr-storage.service';
 import { AdminsAdminService, AdminsController } from './admins/admins.controller';
 import { AuditLogService, UnimplementedAuditLogService } from './audit/audit-log.service';
 import { AuditLogsController } from './audit/audit-logs.controller';
@@ -84,6 +85,8 @@ import { SocialLinksController, SocialLinksService, UnimplementedSocialLinksServ
     { provide: BuyRequestsAdminService, useClass: UnimplementedBuyRequestsAdminService },
     { provide: SellRequestsAdminService, useClass: UnimplementedSellRequestsAdminService },
     { provide: PaymentsAdminService, useClass: UnimplementedPaymentsAdminService },
+    // QR upload works out of the box on local disk; swap for S3/MinIO if preferred.
+    { provide: QrStorageService, useClass: LocalDiskQrStorageService },
     { provide: ReportsAdminService, useClass: UnimplementedReportsAdminService },
     { provide: SocialLinksService, useClass: UnimplementedSocialLinksService },
     { provide: AuditLogService, useClass: UnimplementedAuditLogService },
