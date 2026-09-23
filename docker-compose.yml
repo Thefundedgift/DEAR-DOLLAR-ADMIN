@@ -1,0 +1,22 @@
+services:
+  admin-panel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle at build time (from your .env file)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    image: dear-dollar-admin-panel:latest
+    container_name: dear-dollar-admin
+    restart: unless-stopped
+    ports:
+      # Bound to localhost only - Nginx terminates TLS and proxies here.
+      # Change ADMIN_PORT in .env if 3100 is taken on your VPS.
+      - "127.0.0.1:${ADMIN_PORT:-3100}:3000"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
